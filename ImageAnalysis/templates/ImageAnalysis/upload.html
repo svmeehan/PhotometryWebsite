@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Upload Images Here</title>
+{% endblock %}
+
+{% block content %}
+        <!-- IMPORTANT enctype attribute! -->
+        <form action="{% url "imageanalysis:upload" %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="files" multiple/>
+            <input type="submit" value="Upload"/>
+        </form>
+
+{% endblock %}

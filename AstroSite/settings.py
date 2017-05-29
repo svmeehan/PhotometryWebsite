@@ -52,10 +52,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'AstroSite.urls'
 
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'ImageAnalysis/templates/ImageAnalysis')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
