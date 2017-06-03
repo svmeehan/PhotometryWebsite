@@ -19,6 +19,8 @@ from astropy.visualization import (ImageNormalize, ZScaleInterval, MinMaxInterva
 plt.style.use(astropy_mpl_style)
 from scipy.ndimage.filters import *
 
+from datetime import datetime
+
 # Create your models here.
 class Source(models.Model):
     RA = models.FloatField(default=0.0)
@@ -55,32 +57,37 @@ class Image(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
     cameraFilter = models.CharField(max_length=2)
     imageFile = models.OneToOneField(UploadFile, on_delete=models.CASCADE)
+    offset = models.FloatField(default=25.0)
+    imageName = models.CharField(max_length=100)
+    previewName = models.CharField(max_length=100)
+    obsTime = models.DateTimeField()
 
-    path = None
+
+    path = None #we can use Image.imageFile to return this
     data = None
     header = None
 
     # Other parameters maybe needed
     offset = None #definitely add this to database
     offsetErr = None
-    centreCoordinates = None
-    pixelSize = None
+    centreCoordinates = None #add this for image coordinate search 
+    #pixelSize = None #TODO: check if this is used
+    
 
     # background parameters
     backMean = None
     backMedian = None
     backStd = None
-    # Expecting a list of coordinates (x, y) on image
+    # TODO: sort out this duck typing nonsense
     stars = None
-    # The magnitudes of the sources in the stars array. Indexed coincide.
+    # The magnitudes of the sources in the stars array. Indexed to coincide with stars.
     magnitudes = None
     references = None
     wcsOb = None
     
     realMagnitudes = None
 
-    imageName = None
-    previewName = None
+
 
     #imageXsize = None
     #imageYsize = None
@@ -95,6 +102,13 @@ class Image(models.Model):
         #self.imageXsize = data.shape[1]
         #self.imageYsize = data.shape[0]
         self.header = hdulist[0].header
+        try:
+            self.cameraFilter = self.header['FILTER']
+        except:
+            self.cameraFilter = 'UNK'
+        self.obsTime = self.getTime()
+        print(self.cameraFilter)
+        print(str(self.obsTime))
         hdulist.close()
 
     def getBackground(self):
@@ -146,13 +160,13 @@ class Image(models.Model):
                         source[1] = newX
                         source[2] = newY
                         goodStars.append(source)
-                        print("source accepted")
-                    else:
-                        print(starX, starY, "source moved too much")
-                else:
-                    print(starX, starY, "source too close to edge")
-                    print(subSize, starX, self.data.shape[0] - subSize)
-                    print(subSize, starY, self.data.shape[1] - subSize)
+                        #print("source accepted")
+                    #else:
+                        #print(starX, starY, "source moved too much")
+                #else:
+                    #print(starX, starY, "source too close to edge")
+                    #print(subSize, starX, self.data.shape[0] - subSize)
+                    #print(subSize, starY, self.data.shape[1] - subSize)
             self.stars = goodStars
         else:
             self.getStars()
@@ -232,17 +246,18 @@ class Image(models.Model):
     def getOffset(self):
         """ We calculate the difference between references and the measured magnitudes"""
         refFound = self.getReferencesInImage()
-        print(refFound)
+        #print(refFound)
         offsets = []
         for found in refFound:
-            print(found)
+            #print(found)
             offsets.append(found[1] - found[0])
-        print('OFFSETS:\n',offsets)
+        #print('OFFSETS:\n',offsets)
         #self.offset = np.mean(offsets)
         #self.offsetErr = np.std(offsets)
         self.offset, offsetMedian, self.offsetErr = sigma_clipped_stats(offsets, sigma=2.0, iters=5)
 
     def getRealWorldMagnitudes(self):
+        self.save()
         realMags = []
         for index, star in enumerate(self.stars):
             #x, y = self.wcsOb.all_pix2world(star[1], star[2], 0)
@@ -282,4 +297,47 @@ class Image(models.Model):
         self.imageName = self.path.split('/')[3]
         self.previewName = self.imageName.split('.')[0] + '.png'
         plt.savefig('ImageAnalysis/static/images/' + self.previewName, bbox_inches='tight', pad_inches=0) 
+
+    def getTime(self):
+        if self.header is not None:
+            # maybe try date-obs first
+            for key, value in self.header.items():
+                print(value)
+                try:
+                    if len(value.split('-')) == 3 and len(value.split('T')) != 2:
+                        print('found date part')
+                        year = value.split('-')[0]
+                        month = value.split('-')[1]
+                        day = value.split('-')[2]
+                except:
+                    pass
+                try:    
+                    if len(value.split(':')) == 3 and len(value.split('T')) != 2:
+                        print('found time part')
+                        hour = value.split(':')[0]
+                        minute = value.split(':')[1]
+                        second = value.split(':')[2]
+                except:
+                    pass
+                try:
+                    if len(value.split('T')) == 2 and len(value.split('-')) == 3 and len(value.split(':')) == 3 and value.contains(' ') == False:
+                        print('found combo date time')
+                        date = value.split('T')[0]
+                        time = value.split('T')[1]
+                        year = date.split('-')[0]
+                        month = date.split('-')[1]
+                        day = date.split('-')[2]
+                        hour = time.split(':')[0]
+                        minute = time.split(':')[1]
+                        second = time.split(':')[2]
+                except:
+                    pass
+
+            if year is not None and month is not None and day is not None\
+             and hour is not None and minute is not None and second is not None:
+                return datetime(year=int(year), month=int(month), day=int(day), hour=int(hour), minute=int(minute), second=int(float(second)))
+            else:
+                return datetime.utcnow()
+        else:
+            self.loadData()
 

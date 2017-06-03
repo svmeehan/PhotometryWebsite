@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Image Analysis Homepage</title>
+{% endblock %}
+{% block content%}
+	<h1>Welcome.</h1>
+	<h3>This website carries out image analysis on uploaded images and allows a user to browse the results.</h3>
+	<h3>Most recent analysed images: </h3>
+	{% for image in images %}
+		<a href="{% url 'imageanalysis:image' %}{{image.id}}">{{image.imageFile}}</a><br/>
+	{% endfor %}
+{% endblock %}

@@ -9,7 +9,7 @@
     	<p>This is the results page</p>
     	{% for image in images %}
     		{{image.imageName}}<br/>
-    		<img src="{% static 'images/' %}{{image.previewName}}" alt="Image preview" usemap="#{{image.previewName}}_map">
+    		<img src="{% static 'images/' %}{{image.previewName}}" alt="Image preview">
     		<br/>
     		<ul>
     		{% for source in image.sourceinimage_set.all %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Object @ {{ source.RA }}, {{ source.DEC }}</title>
+
+{% endblock %}
+{% block content%}
+	{% load staticfiles %}
+	<img src="{% static 'images/' %}{{ lcName }}" alt="Lightcurve for Object @ {{ source.RA }}, {{ source.DEC }}">
+{% endblock %} 

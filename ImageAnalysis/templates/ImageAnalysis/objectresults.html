@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Objects found at </title>
+{% endblock %}
+{% block content %}
+	<h3>Closest sources:</h3>
+	{% for source in results %}
+		<a href="{% url 'imageanalysis:object' %}{{source.pk}}">{{source.RA}}, {{source.DEC}}</a>
+		<br/>
+	{% endfor %}
+{% endblock %}

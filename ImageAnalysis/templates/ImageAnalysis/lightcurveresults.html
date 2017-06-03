@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Lightcurve search results</title>
+
+{% endblock %}
+{% block content%}
+	{% for source in results %}
+		<a href="{% url 'imageanalysis:lightcurve' %}{{source.pk}}">{{ source.RA }}, {{ source.DEC }}</a>
+		<br/>
+	{% endfor %}
+{% endblock %}

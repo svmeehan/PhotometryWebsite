@@ -1,2 +1,18 @@
-<img src="{{ }}" alt="">
-<map>
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Results for</title>
+{% endblock %}
+
+{% block content %}
+	{% load staticfiles %}
+	{{image.imageName}}<br/>
+    <img src="{% static 'images/' %}{{image.previewName}}" alt="Image preview" usemap="#{{image.previewName}}_map">
+    <br/>
+    <ul>
+    	{% for source in image.sourceinimage_set.all %}
+    		<li><a href="{% url 'imageanalysis:object'%}{{source.source.pk}}">{{source.source.RA}}, {{source.source.DEC}}</a>: {{ source.brightness }}</li>
+    	{% endfor %}
+    </ul>
+    <br/>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Image results</title>
+{% endblock %}
+{% block content%}
+	<h3>The coordinates appear in the following images:</h3>
+	{% for image in results %}
+		<a href="{% url 'imageanalysis:image' %}{{ image.pk }}">{{ image.imageName }}</a>
+		<br/>
+	{% endfor %}
+{% endblock %}

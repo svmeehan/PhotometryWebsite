@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+        <title>Object @ {{ source.RA }}, {{ source.DEC }}</title>
+
+{% endblock %}
+{% block content%}
+	{% for object in source %}
+		<a href="{% url 'imageanalysis:lightcurve' %}{{observation.image.pk}}">{{ observation.image.imageFile.file }}</a>: {{ observation.brightness }}
+		<br/>
+	{% endfor %}
+{% endblock %}

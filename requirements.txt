@@ -1,0 +1,8 @@
+Django
+gunicorn
+numpy
+scipy
+matplotlib
+astropy==1.3
+photutils
+astroquery
