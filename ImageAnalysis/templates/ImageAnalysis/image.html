@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    <title>Results for</title>
+    <title>Results for {{image.imageName}}</title>
 {% endblock %}
 
 {% block content %}
 	{% load staticfiles %}
-	{{image.imageName}}<br/>
+	<h3>Image: {{image.imageName}}</h3><br/>
     <img src="{% static 'images/' %}{{image.previewName}}" alt="Image preview" usemap="#{{image.previewName}}_map">
+    <br/>
     <br/>
     <ul>
     	{% for source in image.sourceinimage_set.all %}

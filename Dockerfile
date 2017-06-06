@@ -22,7 +22,9 @@ WORKDIR $SRVPROJ
 
 COPY startserver.sh /
 
-ENTRYPOINT ["/startserver.sh"]
+CMD ["/startserver.sh"]
+
+#CMD ["python", "manage.py", "runserver"]
 
 #COPY DockerTest.py /
 #CMD ["python", "/DockerTest.py"]

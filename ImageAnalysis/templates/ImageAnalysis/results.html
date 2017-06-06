@@ -5,17 +5,18 @@
 
 {% endblock %}
 {% block content%}
-		{% load staticfiles %} 
-    	<p>This is the results page</p>
+		{% load staticfiles %}
     	{% for image in images %}
-    		{{image.imageName}}<br/>
+            <h3>Image: {{image.imageName}}</h3><br/>
     		<img src="{% static 'images/' %}{{image.previewName}}" alt="Image preview">
     		<br/>
+            <br/>
     		<ul>
     		{% for source in image.sourceinimage_set.all %}
-    			<li>{{source.source.RA}}, {{source.source.DEC}}, {{ source.brightness }}</li>
+    			<li><a href="{% url 'imageanalysis:object'%}{{source.source.pk}}">{{source.source.RA}}, {{source.source.DEC}}</a>: {{ source.brightness }}</li>
     		{% endfor %}
     		</ul>
     		<br/>
+            <br/>
     	{% endfor %}
 {% endblock %}

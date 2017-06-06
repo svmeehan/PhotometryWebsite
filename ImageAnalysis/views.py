@@ -15,7 +15,12 @@ import matplotlib.pyplot as plt
 def index(request):
 	images = Image.objects.all()
 	numberImages = len(images)
-	images = images[numberImages-10:numberImages]
+	if numberImages < 10:
+		imagesToDisplay = numberImages
+	else:
+		imagesToDisplay = 10
+	images = images[numberImages-imagesToDisplay:numberImages]
+	images = images[::-1] #reverse list
 	return render(request, 'ImageAnalysis/index.html', {'images': images})
 
 def upload(request):
@@ -79,7 +84,7 @@ def object(request, object_id=None):
 		source = Source.objects.get(pk=object_id)
 		return render(request, 'ImageAnalysis/object.html', {'source': source})
 	else:
-		print(request.GET)
+		#print(request.GET)
 		if len(request.GET) > 0:
 			form = ObjectSearchForm(request.GET)
 			if form.is_valid():
@@ -106,8 +111,8 @@ def lightcurve(request, object_id=None):
 		for observation in observations:
 			x.append((observation.image.obsTime - firstObsTime).total_seconds())
 			y.append(observation.brightness)
-		print(x)
-		print(y)
+		#print(x)
+		#print(y)
 		plt.scatter(x=x, y=y)
 		plotImageName = 'lightcurve'+ object_id +'.png'
 		plt.savefig('ImageAnalysis/static/images/' + plotImageName)
@@ -146,7 +151,7 @@ def image(request, object_id=None):
 				results = results[0].image_set.all()
 				if len(results) > 0:
 					print('rendering image results')
-					print(results)
+					#print(results)
 					return render(request, 'ImageAnalysis/imageresults.html', {'results': results})
 				else:
 					return render(request, 'ImageAnalysis/noresults.html')

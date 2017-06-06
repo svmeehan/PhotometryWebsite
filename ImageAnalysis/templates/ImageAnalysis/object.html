@@ -7,7 +7,7 @@
 {% block content%}
 <a href="{% url 'imageanalysis:lightcurve' %}{{source.pk}}"><h3>See Lightcurve</h3></a>
 	{% for observation in source.sourceinimage_set.all %}
-		<a href="{% url 'imageanalysis:image' %}{{observation.image.pk}}">{{ observation.image.imageFile.file }}</a>: {{ observation.brightness }}
+		<a href="{% url 'imageanalysis:image' %}{{observation.image.pk}}">{{ observation.image.imageName }}</a>: {{ observation.brightness }}
 		<br/>
 	{% endfor %}
 {% endblock %}

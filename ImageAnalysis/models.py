@@ -212,7 +212,7 @@ class Image(models.Model):
         # catalogStars = Vizier.get_catalogs()
         # TODO: width should be adjustable 
         # TODO: need to add filters...
-        referenceStars = Vizier.query_region(self.getImageSkyCoords(), width="15m", catalog=["UCAC"])
+        referenceStars = Vizier.query_region(self.getImageSkyCoords(), width=self.getImageSizeInDegrees(), catalog=["UCAC"])
         referenceStars = referenceStars[2].as_array().tolist()
         references = []
         for star in referenceStars:
@@ -341,3 +341,11 @@ class Image(models.Model):
         else:
             self.loadData()
 
+    def getImageSizeInDegrees(self):
+        xyMax = max(self.data.shape[0], self.data.shape[1])
+        RA1, DEC1 = self.wcsOb.wcs_pix2world(0, 0, 0)
+        RA2, DEC2 = self.wcsOb.wcs_pix2world(0, 1, 0)
+        pixelSize = (abs(RA2 - RA1)**2 + abs(DEC2 - DEC1)**2)**0.5
+        imageSize = pixelSize * xyMax
+        print(str(imageSize)+'d')
+        return str(imageSize)+'d'
