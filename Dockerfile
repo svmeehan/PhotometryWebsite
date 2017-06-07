@@ -20,6 +20,7 @@ EXPOSE 80
 
 WORKDIR $SRVPROJ
 
+COPY matplotlibrc $SRVPROJ`
 COPY startserver.sh /
 
 CMD ["/startserver.sh"]

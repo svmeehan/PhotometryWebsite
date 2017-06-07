@@ -8,3 +8,4 @@ scikit-learn
 astropy==1.3
 photutils
 astroquery
+django-bootstrap3

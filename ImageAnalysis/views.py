@@ -5,70 +5,47 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
  
 from .forms import UploadFileForm, ObjectSearchForm
 from .models import UploadFile, Image, Camera, Source, SourceInImage
 
 import matplotlib.pyplot as plt
 
+
 def index(request):
-	images = Image.objects.all()
+	"""View for our homepage. Displays the last 10 images analysed"""
+	images = Image.objects.all() #get all images
 	numberImages = len(images)
 	if numberImages < 10:
 		imagesToDisplay = numberImages
 	else:
 		imagesToDisplay = 10
-	images = images[numberImages-imagesToDisplay:numberImages]
+	images = images[numberImages-imagesToDisplay:numberImages] #get last 10 images or all images if there's not 10
 	images = images[::-1] #reverse list
 	return render(request, 'ImageAnalysis/index.html', {'images': images})
 
 def upload(request):
+	"""This view manages the upload of files. It also does the analysis"""
 	if request.method == 'POST':
-		print(request.POST)
-		print(request.FILES)
-		print('recieved data')
 		files = request.FILES.getlist('files')
-		print(files)
-		#print(request.FILES.get(keys[0]))
 		images = []
-		for f in files:
+		for f in files: #for each uploaded file
 			form = UploadFileForm(request.POST, {'file': f})
 			if form.is_valid():
-				print('form data valid')		
-				print('uploading', str(f))
+				print('form data valid')
 				newFile = UploadFile(file = f)
 				if str(f).endswith('.fits'):
 					print('saving image and starting analysis')
 					newFile.save()
-					image = Image(imageFile=newFile, cameraFilter='R', camera=Camera.objects.get(pk=1)) # test image settings
-					#image.save()
-					#print(image.imageFile)
-					image.loadData()
-					image.getBackground()
-					image.getStars()
-					#print(image.stars[0:3])
-					image.centerStars()
-					image.saveRegions()
-					image.saveStars()
+					image = Image(imageFile=newFile, cameraFilter='R', camera=Camera.objects.get(pk=1))
 					image.doPhotometry()
 					image.getReferences()
 					image.getOffset()
-					
 					image.getRealWorldMagnitudes()
 					image.createPreviewImage()
 					image.save()
-
-					#print(len(image.stars))
-					#print('refs:\n', image.references)
-					#print('matching refs:\n', image.getReferencesInImage())
-					#print(image.offset, ' +/- ', image.offsetErr)
-					#print(image.backMean, image.backStd)
-					#print(Source.objects.filter(RA__range=(118.16, 118.169)).filter(DEC__range=(30.077, 30.078)))
-					#print(len(image.realMagnitudes))
 					images.append(image)
-			else:
-				print('form invalid')
 
 		return render(request, 'ImageAnalysis/results.html', {'images': images})
 	else:
@@ -76,15 +53,13 @@ def upload(request):
 
 	data = {'form': form}
 	return render(request, 'ImageAnalysis/upload.html', data)
-	#return render('ImageAnalysis/upload.html')
-	#return HttpResponse("upload?")
 
 def object(request, object_id=None):
+	"""This allows a user to search objects or browse a specific one"""
 	if object_id is not None:
-		source = Source.objects.get(pk=object_id)
+		source = get_object_or_404(Source, pk=object_id)
 		return render(request, 'ImageAnalysis/object.html', {'source': source})
 	else:
-		#print(request.GET)
 		if len(request.GET) > 0:
 			form = ObjectSearchForm(request.GET)
 			if form.is_valid():
@@ -98,12 +73,12 @@ def object(request, object_id=None):
 		else:
 			form = ObjectSearchForm()
 
-		#print(form.RA)
 		return render(request, 'ImageAnalysis/objectsearch.html', {'form': form})
 
 def lightcurve(request, object_id=None):
+	"""This allows a user to browse a sepcific lightcurve or to search for a specific object"""
 	if object_id is not None:
-		source = Source.objects.get(pk=object_id)
+		source = get_object_or_404(Source, pk=object_id)
 		observations = source.sourceinimage_set.all() #todo: orderby time
 		firstObsTime = observations[0].image.obsTime
 		x=[]
@@ -111,8 +86,6 @@ def lightcurve(request, object_id=None):
 		for observation in observations:
 			x.append((observation.image.obsTime - firstObsTime).total_seconds())
 			y.append(observation.brightness)
-		#print(x)
-		#print(y)
 		plt.scatter(x=x, y=y)
 		plotImageName = 'lightcurve'+ object_id +'.png'
 		plt.savefig('ImageAnalysis/static/images/' + plotImageName)
@@ -133,12 +106,12 @@ def lightcurve(request, object_id=None):
 		else:
 			form = ObjectSearchForm()
 
-		#print(form.RA)
 		return render(request, 'ImageAnalysis/objectsearch.html', {'form': form})
 
 def image(request, object_id=None):
+	"""find or view an image"""
 	if object_id is not None:
-		image = Image.objects.get(pk=object_id)
+		image = get_object_or_404(Image, pk=object_id)
 		return render(request, 'ImageAnalysis/image.html', {'image': image})
 	else:
 		if len(request.GET) > 0:
@@ -151,7 +124,6 @@ def image(request, object_id=None):
 				results = results[0].image_set.all()
 				if len(results) > 0:
 					print('rendering image results')
-					#print(results)
 					return render(request, 'ImageAnalysis/imageresults.html', {'results': results})
 				else:
 					return render(request, 'ImageAnalysis/noresults.html')

@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 
+{% load bootstrap3 %}
+
 {% block title %}
         <title>Find an object</title>
 {% endblock %}
 {% block content%}
 	<h3>Search for an object</h3>
-	<p>Enter RA and DEC values in degrees eg; 118.12</p>
+	<p>Enter RA and DEC values in degrees eg; 118.0657, 33.15896</p>
 	<form action="." method="get">
-		
-		<!--{% csrf_token %}
-		RA: <input type="text" label="RA">
-		DEC: <input type="text" label="DEC"> -->
-		<!--{{ form }} -->
-		{{ form.as_p }}
-		<input type="submit" value="Search objects">
+		<div class="form-group row">
+			<div class="col-xs-2">
+				{% bootstrap_form form layout='inline' %}
+				<input type="submit" class="btn btn-default" value="Search objects">
+			</div>
+		</div>
 	</form>
 {% endblock %}
